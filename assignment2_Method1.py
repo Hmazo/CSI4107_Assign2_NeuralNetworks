@@ -6,6 +6,13 @@ from nltk.tokenize import RegexpTokenizer
 import math
 import re
 from autocorrect import Speller
+
+#Assign2 libraries 
+from sent2vec.vectorizer import Vectorizer
+from scipy import spatial
+from array import *
+import numpy
+
 #import pytrec_eval
 
 
@@ -188,15 +195,15 @@ for i in range(len(results)):
     print(results[i])  # print results -> [(docid, rank score), ...]
 '''
 
-print("What is the run id: ")
-run_id = input()  # id chosen for specific run
+#print("What is the run id: ")
+#run_id = input()  # id chosen for specific run
 
 # have to output doc format topic_id Q0 docno rank score tag
 # queries from test file
 queriesDoc = open("test_queries_49.txt", "r")
 queriesLst = []
 qcnt = 0  # query iterat counter
-f = open("results_file.txt", "w")
+f = open("results_file_method1.txt", "w")
 
 query = ["topic_id", "query title"]
 for line in queriesDoc:
@@ -209,19 +216,89 @@ for line in queriesDoc:
         query = ["", ""]
 
 # queriesLst[][] =[][topic_id, doc_no, querty title]
+
+firstResultsList = []
+
 for x in range(49):  # iterate 49 queries
     results = queryResults(queriesLst[x][1], vocab, Documents, 1000)
+    firstResultsList.append([])
     for i in range(min(len(results), 1000)):  # top 1000 results for each query if that many
+        #NEW class results in a list
+        firstResultsList[x].append(results[i][0]) 
+        '''
         topic_id = queriesLst[x][0].rstrip('\n')
         Q0 = "Q0"
         doc_no = results[i][0]  # results -> [(docid, rank score), ...]
         # tweet id
         rank = i  # 1 is highest rank\
         score = results[i][1]  # computed degree of match between the segment and the topic
+        '''
 
-        f.write(str(x+1) + " " + Q0 + " " + doc_no + " " + str(rank) + " " + str(score) + " " + run_id + "\n")
+#----------------Second run using NLP library sent2vec to recompute similarity scores----------
+# Documents['docid'] ->(sentence, dicitionaryOfWeights, lengthOfVector)
 
-f.close
+#print(Documents[results[0][0]][0])  # actual tweet
+
+#1.run bert to encode the query and all the selected (1000 documents per query)
+def encodeBERT (docIDArray, Documents):
+    #isolating the 1000 chosen documents for a query
+    chosenTweetList = []
+    tweets=[]
+
+    for d in docIDArray:
+        tweets.append(Documents[d][0]) #actual tweets 
+
+    #running BERT
+    vectorizer = Vectorizer()
+    vectorizer.bert(tweets)
+    vectors = vectorizer.vectors
+    #print(vectors[0])
+
+    for i in range(len(docIDArray)): 
+        
+        chosenTweetList.append([vectors[i].tolist(), docIDArray[i]]) #-> ['berted tweet', doc id]
+    
+    
+    return chosenTweetList 
+
+
+#2.calculate the new vectors between query and 1000docs
+
+newDocRankingList = []
+
+#for x in range (49): #iterate queries again 
+for x in range(1):
+    '''
+    docidarray = [] #one for each query
+    for i in range (1000): #again the top 1000 results
+        docid = results[i][0]
+        docidarray.append(docid)
+    '''
+    
+    #do the bert encoding
+    docVectors = encodeBERT(firstResultsList[x], Documents) #-> [['bert processed tweet', doc id],..]
+
+    #print (numpy.array(docVectors[1][0]))
+    #encode query 
+    vectorizer = Vectorizer()
+    vectorizer.bert(queriesLst[x][1]) #current query
+    queryVect = vectorizer.vectors
+    newRank = []
+    
+    for i in range (len(docVectors)): #calculate vector length
+
+        dist = spatial.distance.cosine(queryVect[0], numpy.array(docVectors[i][0]))  
+        newRank.append([dist, docVectors[i][1]]) #-> appends [similarity distance, doc id]
+
+    #3.rank the docs again based on scores (use sorted() function)
+    sortedNewRank = sorted(newRank) 
+    newDocRankingList.append(sortedNewRank)
+
+print (newDocRankingList) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
+
+        #f.write(str(x+1) + " " + Q0 + " " + doc_no + " " + str(rank) + " " + str(score) + " " + run_id + "\n")
+
+#f.close
 
 #Line to compare with TREC results
 #pytrec_eval._RelevanceEvaluator.evaluate() 
