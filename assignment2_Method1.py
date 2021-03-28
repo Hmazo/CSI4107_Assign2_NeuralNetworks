@@ -224,7 +224,7 @@ for x in range(49):  # iterate 49 queries
     firstResultsList.append([])
     for i in range(min(len(results), 1000)):  # top 1000 results for each query if that many
         #NEW class results in a list
-        firstResultsList[x].append(results[i][0]) 
+        firstResultsList[x].append(results[i][0])
         '''
         topic_id = queriesLst[x][0].rstrip('\n')
         Q0 = "Q0"
@@ -266,7 +266,7 @@ def encodeBERT (docIDArray, Documents):
 
 newDocRankingList = []
 
-#for x in range (49): #iterate queries again 
+#for x in range (49): #iterate queries again
 for x in range(1):
     '''
     docidarray = [] #one for each query
@@ -299,8 +299,5 @@ print (newDocRankingList) #sorted low to high (low is good) -> [ [similarity dis
         #f.write(str(x+1) + " " + Q0 + " " + doc_no + " " + str(rank) + " " + str(score) + " " + run_id + "\n")
 
 #f.close
-
-#Line to compare with TREC results
-#pytrec_eval._RelevanceEvaluator.evaluate() 
 
 
