@@ -267,7 +267,7 @@ def encodeBERT (docIDArray, Documents):
 newDocRankingList = []
 querycount = 46
 track = 0
-for x in range(46,49): #iterate queries again
+for x in range(45,49): #iterate queries again
     print("starting query...")
     '''
     docidarray = [] #one for each query
