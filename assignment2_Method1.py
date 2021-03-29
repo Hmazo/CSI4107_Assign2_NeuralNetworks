@@ -195,8 +195,8 @@ for i in range(len(results)):
     print(results[i])  # print results -> [(docid, rank score), ...]
 '''
 
-#print("What is the run id: ")
-#run_id = input()  # id chosen for specific run
+print("What is the run id: ")
+run_id = input()  # id chosen for specific run
 
 # have to output doc format topic_id Q0 docno rank score tag
 # queries from test file
@@ -265,9 +265,10 @@ def encodeBERT (docIDArray, Documents):
 #2.calculate the new vectors between query and 1000docs
 
 newDocRankingList = []
+querycount = 0
 
-#for x in range (49): #iterate queries again
-for x in range(1):
+for x in range(2): #iterate queries again
+    print("starting query...")
     '''
     docidarray = [] #one for each query
     for i in range (1000): #again the top 1000 results
@@ -287,17 +288,33 @@ for x in range(1):
     
     for i in range (len(docVectors)): #calculate vector length
 
-        dist = spatial.distance.cosine(queryVect[0], numpy.array(docVectors[i][0]))  
+        dist = spatial.distance.cosine(queryVect[0], numpy.array(docVectors[i][0]))
         newRank.append([dist, docVectors[i][1]]) #-> appends [similarity distance, doc id]
 
     #3.rank the docs again based on scores (use sorted() function)
     sortedNewRank = sorted(newRank) 
     newDocRankingList.append(sortedNewRank)
+    print(newDocRankingList)
 
-print (newDocRankingList) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
+    #4. write to results file
+    print(querycount)
 
-        #f.write(str(x+1) + " " + Q0 + " " + doc_no + " " + str(rank) + " " + str(score) + " " + run_id + "\n")
+    temprank = 0
+    print(newDocRankingList[querycount]) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
 
-#f.close
+    for i in newDocRankingList[querycount]:
+        print(str(querycount+1))
+        print(i[0])
+        print(i[1])
+        print(run_id)
+        print(temprank)
+        f.write(str(querycount+1) + " " + "Q0" + " " + str(i[1]) + " " + str(temprank) + " " + str(i[0]) + " " + str(run_id) + "\n")
+        temprank +=1
+
+    #reset variables
+    querycount+=1
+    temprank = 0
+
+f.close
 
 
