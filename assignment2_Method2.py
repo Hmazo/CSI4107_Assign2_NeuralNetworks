@@ -8,6 +8,14 @@ import re
 from autocorrect import Speller
 #import pytrec_eval
 
+#assignment 2 method 2
+import warnings
+warnings.filterwarnings('ignore')
+#for our word embeddings
+from gensim.models.word2vec import Word2Vec
+import gensim.downloader as api
+model_glove_twitter = api.load("glove-twitter-25")
+
 
 # create a vocab dict
 # (word) : (df, list of dictionaries[documentid:(string of text, tf),...])
@@ -109,13 +117,14 @@ def indexing(currSentenceValue, currSentenceTuple, Documents, vocab):
                 docs[currSentenceTuple[0]] = 1
                 vocab[stemword] = (len(docs), docs)
     return (vocab, Documents)
-
-
+       
 def queryResults(queryString, vocabDict, documents, numberOfRowsForResults):
     stop_words = set(stopwords.words('english'))
     scores = {}
     N = len(documents)
     queryString = queryString.lower()
+    #queryStringExpansion = queryExpansionMethod(model_glove_twitter,queryString)
+    queryStringExpansion = queryString
     # create our tokenizer that will also remove punctuation
     tokenizer = RegexpTokenizer(r'\w+')
     # removing the I'm , can't to Im and cant
@@ -153,11 +162,29 @@ def queryResults(queryString, vocabDict, documents, numberOfRowsForResults):
     for word in weightsForQuery:
         docsFoundForStemWord = vocabDict[word][1]
         for doc in docsFoundForStemWord:
-            scores[doc] = cosineCalculator(doc, Documents, lengthOfQuery, weightsForQuery)
+            scores[doc] = cosineCalculator(doc, documents, lengthOfQuery, weightsForQuery)
 
-    arrayOfSortedScoresTuples = sorted(scores.items(), key=lambda x: x[1], reverse=True, )
 
-    return arrayOfSortedScoresTuples[:numberOfRowsForResults]
+    arrayOfSortedScoresTuples = sorted(scores.items(), key=lambda x: x[1], reverse=True )
+    #here we add a dictionary that will store the documents and their new scores on the query expansion
+    arrayOfSortedScoresTuplesExpanded = {}
+    for i in range(len(arrayOfSortedScoresTuples)):
+        docId = arrayOfSortedScoresTuples[i][0]
+        originalScore = arrayOfSortedScoresTuples[i][1]
+        docSentence = documents[docId][0] #get sentence
+        #get the tokens in our twitter embedding model 
+        tokens_1=[t for t in docSentence.split() if t in model_glove_twitter]
+        tokens_2=[t for t in queryStringExpansion.split() if t in model_glove_twitter]
+        cosine=0
+        if (len(tokens_1) > 0 and len(tokens_2)>0):
+            cosine=model_glove_twitter.n_similarity(tokens_1,tokens_2)
+            #take the average of both scores!
+            newScoreAvg = (originalScore+cosine)/2
+            #store the score with the document
+            arrayOfSortedScoresTuplesExpanded[docId]=newScoreAvg
+    #sort by highest value!
+    arrayOfSortedScoresTuplesExpanded= sorted(arrayOfSortedScoresTuplesExpanded.items(), key=lambda x: x[1], reverse=True)  
+    return arrayOfSortedScoresTuplesExpanded[:numberOfRowsForResults]
 
 
 def cosineCalculator(documentid, documents, lengthOfQuery, weightsForQuery):
@@ -196,7 +223,7 @@ run_id = input()  # id chosen for specific run
 queriesDoc = open("test_queries_49.txt", "r")
 queriesLst = []
 qcnt = 0  # query iterat counter
-f = open("results_file.txt", "w")
+f = open("results_file_method2.txt", "w")
 
 query = ["topic_id", "query title"]
 for line in queriesDoc:
