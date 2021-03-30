@@ -263,11 +263,11 @@ def encodeBERT (docIDArray, Documents):
 
 
 #2.calculate the new vectors between query and 1000docs
+print(firstResultsList[46])
 
 newDocRankingList = []
-querycount = 46
-track = 0
-for x in range(45,49): #iterate queries again
+querycount = 0
+for x in range(49): #iterate queries again
     print("starting query...")
     '''
     docidarray = [] #one for each query
@@ -300,22 +300,14 @@ for x in range(45,49): #iterate queries again
     print(querycount)
 
     temprank = 0
-    print(newDocRankingList[track]) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
+    print(newDocRankingList[querycount].reverse()) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
 
-    for i in newDocRankingList[track]:
-        print(str(querycount+1))
-        print(i[0])
-        print(i[1])
-        print(run_id)
-        print(temprank)
+    for i in newDocRankingList[querycount].reverse():
         f.write(str(querycount+1) + " " + "Q0" + " " + str(i[1]) + " " + str(temprank) + " " + str(i[0]) + " " + str(run_id) + "\n")
         temprank +=1
 
     #reset variables
     querycount+=1
-    track += 1
-    temprank = 0
-
 f.close
 
 
