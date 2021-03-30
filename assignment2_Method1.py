@@ -300,9 +300,9 @@ for x in range(49): #iterate queries again
     print(querycount)
 
     temprank = 0
-    print(newDocRankingList[querycount].reverse()) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
+    print(newDocRankingList[querycount]) #sorted low to high (low is good) -> [ [similarity distance, doc id], ...]
 
-    for i in newDocRankingList[querycount].reverse():
+    for i in newDocRankingList[querycount]:
         f.write(str(querycount+1) + " " + "Q0" + " " + str(i[1]) + " " + str(temprank) + " " + str(i[0]) + " " + str(run_id) + "\n")
         temprank +=1
 
