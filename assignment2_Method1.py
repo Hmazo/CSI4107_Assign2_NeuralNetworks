@@ -267,6 +267,7 @@ print(firstResultsList[46])
 
 newDocRankingList = []
 querycount = 0
+#Change this to ' for x in range(1): ' to rapidaly test on first 2 queries 
 for x in range(49): #iterate queries again
     print("starting query...")
     '''
